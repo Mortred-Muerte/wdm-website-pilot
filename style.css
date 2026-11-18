@@ -95,6 +95,7 @@ h3{font-size:22px;font-weight:700;letter-spacing:-.025em}
 @keyframes services-card-in{from{opacity:0;transform:translateY(24px) scale(.99)}to{opacity:1;transform:none}}
 @media(max-width:620px){#services{scroll-margin-top:8px}}
 @media(prefers-reduced-motion:reduce){#services.services-reveal-ready [data-services-reveal],#services.services-reveal-ready .service-card[data-services-reveal],#services.services-reveal-ready.services-revealed [data-services-reveal],#services.services-reveal-ready.services-revealed .service-card[data-services-reveal]{opacity:1;transform:none;animation:none;transition:none}}
+@media print{#services [data-services-reveal]{opacity:1!important;transform:none!important;animation:none!important}}
 .mint-section{background:var(--wash)}
 .white-card{background:#fff;border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
 .line-icon{height:44px;width:44px;display:flex;align-items:center;justify-content:center;border:1px solid #b8ded6;border-radius:13px;font-size:20px;margin-bottom:28px;line-height:1;background:#f3fffa}
