@@ -79,6 +79,7 @@ h3{font-size:22px;font-weight:700;letter-spacing:-.025em}
 .section-note{text-align:center;font-size:12px;color:var(--muted);max-width:740px;margin:30px auto 0}
 /* Services has its own once-only sequence; other section reveals stay unchanged. */
 #services{scroll-margin-top:12px}
+@media(min-width:621px){#services .service-grid:not(:has(details[open])) .service-card{align-self:stretch}}
 #services [data-services-reveal="label"]{--services-delay:0s}
 #services [data-services-reveal="title"]{--services-delay:.17s}
 #services [data-services-reveal="subtitle"]{--services-delay:.34s}
