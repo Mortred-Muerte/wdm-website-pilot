@@ -1,0 +1,198 @@
+(() => {
+  'use strict';
+
+  const header = document.querySelector('#site-header');
+  const menuToggle = document.querySelector('#menu-toggle');
+  const navigation = document.querySelector('#primary-nav');
+
+  if (header && menuToggle && navigation) {
+    header.classList.add('nav-ready');
+    const setMenuOpen = (open) => {
+      header.classList.toggle('menu-open', open);
+      menuToggle.setAttribute('aria-expanded', String(open));
+    };
+
+    menuToggle.addEventListener('click', () => {
+      setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    navigation.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a')) {
+        setMenuOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+        setMenuOpen(false);
+        menuToggle.focus();
+      }
+    });
+
+    if (typeof window.matchMedia === 'function') {
+      const desktop = window.matchMedia('(min-width: 880px)');
+      const closeAtDesktop = (event) => {
+        if (event.matches) setMenuOpen(false);
+      };
+      closeAtDesktop(desktop);
+      if (typeof desktop.addEventListener === 'function') {
+        desktop.addEventListener('change', closeAtDesktop);
+      } else if (typeof desktop.addListener === 'function') {
+        desktop.addListener(closeAtDesktop);
+      }
+    }
+  }
+
+  const revealItems = Array.from(document.querySelectorAll('[data-reveal]'));
+  const reducedMotion = typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (revealItems.length && 'IntersectionObserver' in window && !reducedMotion) {
+    try {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      revealItems.forEach((item) => observer.observe(item));
+      document.documentElement.classList.add('js');
+    } catch {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+    }
+  } else {
+    revealItems.forEach((item) => item.classList.add('is-visible'));
+  }
+
+  document.querySelectorAll('[data-year]').forEach((element) => {
+    element.textContent = String(new Date().getFullYear());
+  });
+
+  const projectForm = document.querySelector('#project-form');
+  const briefResult = document.querySelector('#brief-result');
+  const briefOutput = document.querySelector('#brief-output');
+  const briefStatus = document.querySelector('#brief-status');
+  const emailBrief = document.querySelector('#email-brief');
+  const whatsappBrief = document.querySelector('#whatsapp-brief');
+  const copyBrief = document.querySelector('#copy-brief');
+  const downloadBrief = document.querySelector('#download-brief');
+
+  if (!projectForm || !briefResult || !briefOutput) return;
+
+  const field = (name) => projectForm.elements.namedItem(name);
+  const value = (name) => {
+    const control = field(name);
+    return control && typeof control.value === 'string' ? control.value.trim() : '';
+  };
+  const selectedLabel = (name) => {
+    const control = field(name);
+    if (!control || !value(name)) return '';
+    if (control.selectedOptions && control.selectedOptions.length) {
+      return control.selectedOptions[0].textContent.trim();
+    }
+    return value(name);
+  };
+  const announce = (message) => {
+    if (briefStatus) briefStatus.textContent = message;
+  };
+
+  ['firstName', 'lastName', 'email', 'service'].forEach((name) => {
+    const control = field(name);
+    if (control && typeof control.setCustomValidity === 'function') {
+      control.addEventListener('input', () => control.setCustomValidity(''));
+      control.addEventListener('change', () => control.setCustomValidity(''));
+    }
+  });
+
+  projectForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    ['firstName', 'lastName', 'email', 'service'].forEach((name) => {
+      const control = field(name);
+      if (control && typeof control.setCustomValidity === 'function') {
+        control.setCustomValidity(value(name) ? '' : 'Please complete this field.');
+      }
+    });
+
+    if (!projectForm.reportValidity()) return;
+
+    const brief = [
+      'WDM WEBSITE ENQUIRY',
+      '',
+      `Name: ${value('firstName')} ${value('lastName')}`,
+      ...(value('business') ? [`Business: ${value('business')}`] : []),
+      `Email: ${value('email')}`,
+      `Service: ${selectedLabel('service')}`,
+      ...(value('details') ? ['', 'About the project', value('details')] : []),
+    ].join('\n');
+
+    briefOutput.value = brief;
+    briefResult.hidden = false;
+    announce('Choose email or WhatsApp to send your enquiry. Nothing has been sent yet.');
+
+    if (emailBrief) {
+      const contactEmail = (projectForm.dataset.contactEmail || '').trim();
+      const validContact = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail);
+      emailBrief.hidden = !validContact;
+      if (validContact) {
+        emailBrief.href = `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent('New website project enquiry')}&body=${encodeURIComponent(brief)}`;
+      } else {
+        emailBrief.removeAttribute('href');
+      }
+    }
+
+    if (whatsappBrief) {
+      const whatsappNumber = (projectForm.dataset.whatsapp || '').replace(/\D/g, '');
+      const validNumber = /^[1-9]\d{6,14}$/.test(whatsappNumber);
+      whatsappBrief.hidden = !validNumber;
+      if (validNumber) {
+        whatsappBrief.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(brief)}`;
+      } else {
+        whatsappBrief.removeAttribute('href');
+      }
+    }
+
+    const resultHeading = briefResult.querySelector('h3');
+    if (resultHeading) {
+      resultHeading.setAttribute('tabindex', '-1');
+      resultHeading.focus();
+    }
+  });
+
+  if (copyBrief) {
+    copyBrief.addEventListener('click', async () => {
+      if (!briefOutput.value) return;
+      try {
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+          throw new Error('Clipboard is unavailable');
+        }
+        await navigator.clipboard.writeText(briefOutput.value);
+        announce('Enquiry copied. You can paste it into your message.');
+      } catch {
+        briefOutput.focus();
+        briefOutput.select();
+        announce('Your enquiry is selected. Use your device’s Copy command to copy it.');
+      }
+    });
+  }
+
+  if (downloadBrief) {
+    downloadBrief.addEventListener('click', () => {
+      if (!briefOutput.value) return;
+      const objectUrl = URL.createObjectURL(new Blob([briefOutput.value], {
+        type: 'text/plain;charset=utf-8',
+      }));
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = 'wdm-website-enquiry.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      announce('Enquiry downloaded. Nothing has been sent.');
+    });
+  }
+})();
