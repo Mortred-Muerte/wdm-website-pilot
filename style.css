@@ -62,7 +62,7 @@ h3{font-size:22px;font-weight:700;letter-spacing:-.025em}
 .two-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
 .aqua{background:var(--aqua)}
 .mint{background:var(--mint)}
-.service-card{padding:32px 28px;border-radius:var(--radius);box-shadow:var(--shadow);align-self:start;min-height:350px}
+.service-card{padding:32px 28px;border-radius:var(--radius);box-shadow:var(--shadow);align-self:start;min-height:300px}
 .card-number{display:block;font-size:10px;letter-spacing:.1em;color:#466865;margin-bottom:38px;font-weight:600}
 .service-card h3{margin-bottom:14px}
 .service-card>p{font-size:15px;line-height:1.5;min-height:46px}
