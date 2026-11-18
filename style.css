@@ -77,6 +77,24 @@ h3{font-size:22px;font-weight:700;letter-spacing:-.025em}
 .service-details li+li{margin-top:7px}
 .service-details>a{font-size:13px;font-weight:600}
 .section-note{text-align:center;font-size:12px;color:var(--muted);max-width:740px;margin:30px auto 0}
+/* Services has its own once-only sequence; other section reveals stay unchanged. */
+#services{scroll-margin-top:12px}
+#services [data-services-reveal="label"]{--services-delay:0s}
+#services [data-services-reveal="title"]{--services-delay:.17s}
+#services [data-services-reveal="subtitle"]{--services-delay:.34s}
+#services [data-services-reveal="card-1"]{--services-delay:.54s}
+#services [data-services-reveal="card-2"]{--services-delay:.72s}
+#services [data-services-reveal="card-3"]{--services-delay:.9s}
+#services [data-services-reveal="note"]{--services-delay:1.1s}
+#services.services-reveal-ready [data-services-reveal]{opacity:0;transform:translateY(16px)}
+#services.services-reveal-ready .service-card[data-services-reveal]{transform:translateY(24px) scale(.99)}
+#services.services-reveal-ready.services-revealed [data-services-reveal]{opacity:1;transform:none;animation:services-text-in .7s cubic-bezier(.22,.61,.36,1) var(--services-delay) 1 backwards}
+#services.services-reveal-ready.services-revealed .service-card[data-services-reveal]{animation-name:services-card-in;animation-duration:.8s}
+#services.services-reveal-ready.services-revealed [data-services-reveal="note"]{animation-duration:.65s}
+@keyframes services-text-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes services-card-in{from{opacity:0;transform:translateY(24px) scale(.99)}to{opacity:1;transform:none}}
+@media(max-width:620px){#services{scroll-margin-top:8px}}
+@media(prefers-reduced-motion:reduce){#services.services-reveal-ready [data-services-reveal],#services.services-reveal-ready .service-card[data-services-reveal],#services.services-reveal-ready.services-revealed [data-services-reveal],#services.services-reveal-ready.services-revealed .service-card[data-services-reveal]{opacity:1;transform:none;animation:none;transition:none}}
 .mint-section{background:var(--wash)}
 .white-card{background:#fff;border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
 .line-icon{height:44px;width:44px;display:flex;align-items:center;justify-content:center;border:1px solid #b8ded6;border-radius:13px;font-size:20px;margin-bottom:28px;line-height:1;background:#f3fffa}

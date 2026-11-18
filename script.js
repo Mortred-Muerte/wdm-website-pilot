@@ -67,6 +67,55 @@
     revealItems.forEach((item) => item.classList.add('is-visible'));
   }
 
+  const servicesSection = document.querySelector('#services');
+  const servicesHeading = servicesSection && servicesSection.querySelector('.section-heading');
+  const servicesRevealItems = servicesSection && servicesSection.querySelectorAll('[data-services-reveal]');
+  const servicesMotionQuery = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+  if (servicesSection && servicesHeading && servicesRevealItems.length
+    && typeof window.IntersectionObserver === 'function'
+    && !(servicesMotionQuery && servicesMotionQuery.matches)) {
+    let servicesObserver;
+    const showServicesImmediately = () => {
+      if (servicesObserver) servicesObserver.disconnect();
+      servicesSection.classList.remove('services-reveal-ready');
+      servicesSection.classList.add('services-revealed');
+    };
+    const handleServicesMotionChange = (event) => {
+      if (!event.matches) return;
+      showServicesImmediately();
+      if (typeof servicesMotionQuery.removeEventListener === 'function') {
+        servicesMotionQuery.removeEventListener('change', handleServicesMotionChange);
+      } else if (typeof servicesMotionQuery.removeListener === 'function') {
+        servicesMotionQuery.removeListener(handleServicesMotionChange);
+      }
+    };
+
+    try {
+      servicesObserver = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.08)) {
+          servicesSection.classList.add('services-revealed');
+          servicesObserver.disconnect();
+        }
+      }, { threshold: 0.08 });
+      servicesObserver.observe(servicesHeading);
+      servicesSection.classList.add('services-reveal-ready');
+
+      if (servicesMotionQuery) {
+        if (typeof servicesMotionQuery.addEventListener === 'function') {
+          servicesMotionQuery.addEventListener('change', handleServicesMotionChange);
+        } else if (typeof servicesMotionQuery.addListener === 'function') {
+          servicesMotionQuery.addListener(handleServicesMotionChange);
+        }
+        handleServicesMotionChange(servicesMotionQuery);
+      }
+    } catch {
+      showServicesImmediately();
+    }
+  }
+
   document.querySelectorAll('[data-year]').forEach((element) => {
     element.textContent = String(new Date().getFullYear());
   });
