@@ -165,6 +165,107 @@
     }
   }
 
+  const updateRequestOpen = document.querySelector('#update-request-open');
+  const updateRequestDialog = document.querySelector('#update-request-dialog');
+  const updateRequestClose = document.querySelector('#update-request-close');
+  const updateRequestForm = document.querySelector('#update-request-form');
+  const updateRequestStatus = document.querySelector('#update-request-status');
+
+  if (updateRequestOpen && updateRequestDialog && updateRequestClose
+    && updateRequestForm && updateRequestStatus) {
+    let updateRequestIsOpen = false;
+    let updateRequestUsesFallback = false;
+
+    const finishUpdateRequestClose = () => {
+      if (!updateRequestIsOpen) return;
+      updateRequestIsOpen = false;
+      updateRequestUsesFallback = false;
+      document.body.classList.remove('update-request-open');
+      updateRequestOpen.focus();
+    };
+    const closeUpdateRequest = () => {
+      if (!updateRequestIsOpen) return;
+      try {
+        if (!updateRequestUsesFallback && typeof updateRequestDialog.close === 'function') {
+          updateRequestDialog.close();
+        } else {
+          updateRequestDialog.removeAttribute('open');
+        }
+      } catch {
+        updateRequestDialog.removeAttribute('open');
+      }
+      finishUpdateRequestClose();
+    };
+
+    updateRequestOpen.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (updateRequestIsOpen) return;
+      updateRequestStatus.textContent = '';
+      updateRequestUsesFallback = false;
+
+      try {
+        if (typeof updateRequestDialog.showModal !== 'function') {
+          throw new Error('Native dialog is unavailable');
+        }
+        updateRequestDialog.showModal();
+      } catch {
+        updateRequestUsesFallback = true;
+        updateRequestDialog.setAttribute('open', '');
+        updateRequestDialog.setAttribute('role', 'dialog');
+        updateRequestDialog.setAttribute('aria-modal', 'true');
+      }
+
+      updateRequestIsOpen = true;
+      document.body.classList.add('update-request-open');
+      const nameInput = updateRequestDialog.querySelector('#update-name');
+      if (nameInput) nameInput.focus();
+    });
+
+    updateRequestClose.addEventListener('click', (event) => {
+      event.preventDefault();
+      closeUpdateRequest();
+    });
+    updateRequestDialog.addEventListener('close', finishUpdateRequestClose);
+    updateRequestDialog.addEventListener('click', (event) => {
+      if (event.target !== updateRequestDialog) return;
+      const bounds = updateRequestDialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right
+        || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+        closeUpdateRequest();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (!updateRequestIsOpen || !updateRequestUsesFallback) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeUpdateRequest();
+      } else if (event.key === 'Tab') {
+        const focusable = Array.from(updateRequestDialog.querySelectorAll(
+          'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
+        )).filter((element) => !element.hidden && element.getClientRects().length);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!first) return;
+        if (event.shiftKey && (document.activeElement === first
+          || !updateRequestDialog.contains(document.activeElement))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last
+          || !updateRequestDialog.contains(document.activeElement))) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    updateRequestForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!updateRequestForm.reportValidity()) return;
+      updateRequestStatus.textContent = 'Preview complete. Nothing has been sent.';
+    });
+  }
+
   document.querySelectorAll('[data-year]').forEach((element) => {
     element.textContent = String(new Date().getFullYear());
   });
