@@ -116,6 +116,55 @@
     }
   }
 
+  const managementSection = document.querySelector('#management');
+  const managementHeading = managementSection && managementSection.querySelector('.section-heading');
+  const managementRevealItems = managementSection && managementSection.querySelectorAll('[data-management-reveal]');
+  const managementMotionQuery = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+  if (managementSection && managementHeading && managementRevealItems.length
+    && typeof window.IntersectionObserver === 'function'
+    && !(managementMotionQuery && managementMotionQuery.matches)) {
+    let managementObserver;
+    const showManagementImmediately = () => {
+      if (managementObserver) managementObserver.disconnect();
+      managementSection.classList.remove('management-reveal-ready');
+      managementSection.classList.add('management-revealed');
+    };
+    const handleManagementMotionChange = (event) => {
+      if (!event.matches) return;
+      showManagementImmediately();
+      if (typeof managementMotionQuery.removeEventListener === 'function') {
+        managementMotionQuery.removeEventListener('change', handleManagementMotionChange);
+      } else if (typeof managementMotionQuery.removeListener === 'function') {
+        managementMotionQuery.removeListener(handleManagementMotionChange);
+      }
+    };
+
+    try {
+      managementObserver = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.08)) {
+          managementSection.classList.add('management-revealed');
+          managementObserver.disconnect();
+        }
+      }, { threshold: 0.08 });
+      managementObserver.observe(managementHeading);
+      managementSection.classList.add('management-reveal-ready');
+
+      if (managementMotionQuery) {
+        if (typeof managementMotionQuery.addEventListener === 'function') {
+          managementMotionQuery.addEventListener('change', handleManagementMotionChange);
+        } else if (typeof managementMotionQuery.addListener === 'function') {
+          managementMotionQuery.addListener(handleManagementMotionChange);
+        }
+        handleManagementMotionChange(managementMotionQuery);
+      }
+    } catch {
+      showManagementImmediately();
+    }
+  }
+
   document.querySelectorAll('[data-year]').forEach((element) => {
     element.textContent = String(new Date().getFullYear());
   });
