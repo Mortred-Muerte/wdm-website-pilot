@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+// Enable after the destination mailbox is provisioned and ready for its receipt test.
+const WDM_UPDATE_DELIVERY_ENABLED = false;
+
 // Same-origin contact endpoint. No visitor data is used as a recipient or sender.
 @ini_set('display_errors', '0');
 header('Content-Type: application/json; charset=UTF-8');
@@ -192,7 +195,7 @@ try {
             || preg_match_all('/./us', $values['changes']) > 5000) $errors['changes'] = 'Describe the changes using up to 5,000 characters.';
     }
     if ($errors) wdm_reply(422, ['success' => false, 'message' => 'Please check the form details and try again.', 'errors' => $errors]);
-    if (!is_callable('mail')) wdm_unavailable();
+    if (!WDM_UPDATE_DELIVERY_ENABLED || !is_callable('mail')) wdm_unavailable();
     $retry = wdm_rate_limit();
     if ($retry < 0) wdm_unavailable();
     if ($retry > 0) {
