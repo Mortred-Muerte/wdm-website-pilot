@@ -107,9 +107,18 @@ h3{font-size:22px;font-weight:700;letter-spacing:-.025em}
 /* Ongoing support: simpler cards and a section-scoped entrance sequence. */
 #management .white-card{min-width:0}
 #management .plain-list li:before{content:"";flex:0 0 5px;width:5px;height:5px;margin-top:.65em;border-radius:50%;background:#499181}
-#management .management-action{display:flex;justify-content:center;margin-top:36px;text-align:center}
+#management .management-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;margin-top:36px;text-align:center}
 #management .management-update-button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;max-width:100%;padding:12px 30px;border:1px solid #536d67;border-radius:999px;background:#fff;box-shadow:0 3px 7px #203e3210;color:var(--ink);font-size:14px;font-weight:600;line-height:1.4;text-decoration:none;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
 #management .management-update-button:hover{transform:translateY(-1px);border-color:#2d6258;box-shadow:0 5px 12px #203a3320}
+#management .management-email-options{width:min(100%,520px);font-size:13px;color:var(--muted)}
+#management .management-email-options>summary{display:inline-block;min-height:36px;padding:6px 10px;cursor:pointer;list-style:none;text-decoration:underline;text-underline-offset:4px}
+#management .management-email-options>summary::-webkit-details-marker{display:none}
+#management .management-email-panel{margin-top:10px;padding:20px;background:#fff;border:1px solid var(--line);border-radius:20px}
+#management .management-email-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:16px}
+#management .management-email-choices>a,#management .management-email-choices>button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:10px 16px;border:1px solid #b3ceca;border-radius:999px;background:#fff;color:var(--ink);font-size:13px;line-height:1.4;text-decoration:none}
+#management .management-email-choices>a:hover,#management .management-email-choices>button:hover{background:#f0fff9;border-color:#536d67}
+#management .management-email-status:not(:empty){margin-top:16px}
+#management #management-email-draft{display:block;min-height:260px;margin-top:16px;background:#fff;font-size:13px;text-align:left}
 #management [data-management-reveal="label"]{--management-delay:0s}
 #management [data-management-reveal="title"]{--management-delay:.17s}
 #management [data-management-reveal="subtitle"]{--management-delay:.34s}

@@ -165,6 +165,51 @@
     }
   }
 
+  const managementUpdateButton = document.querySelector('#management .management-update-button');
+  const managementEmailOptions = document.querySelector('#management-email-options');
+  const managementCopyEmail = document.querySelector('#management-copy-email');
+  const managementEmailDraft = document.querySelector('#management-email-draft');
+  const managementEmailStatus = document.querySelector('#management-email-status');
+
+  if (managementUpdateButton && managementEmailOptions && managementCopyEmail
+    && managementEmailDraft && managementEmailStatus) {
+    try {
+      const updateMailto = new URL(managementUpdateButton.href);
+      const updateRecipient = decodeURIComponent(updateMailto.pathname).trim();
+
+      if (updateMailto.protocol === 'mailto:' && updateRecipient) {
+        const updateSubject = updateMailto.searchParams.get('subject') || '';
+        const updateBody = updateMailto.searchParams.get('body') || '';
+        const updateEmailDetails = `To: ${updateRecipient}\nSubject: ${updateSubject}\n\n${updateBody}`;
+
+        managementUpdateButton.addEventListener('click', () => {
+          managementEmailOptions.open = true;
+        });
+
+        managementCopyEmail.addEventListener('click', async () => {
+          managementEmailOptions.open = true;
+          managementEmailDraft.value = updateEmailDetails;
+
+          try {
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+              throw new Error('Clipboard is unavailable');
+            }
+            await navigator.clipboard.writeText(updateEmailDetails);
+            managementEmailStatus.textContent = 'Email details copied. Paste them into a new email.';
+          } catch {
+            managementEmailDraft.hidden = false;
+            managementEmailDraft.focus();
+            managementEmailDraft.select();
+            managementEmailStatus.textContent = 'Select and copy the email details below.';
+          }
+        });
+        managementCopyEmail.hidden = false;
+      }
+    } catch {
+      // Keep the native email link and details control available if parsing fails.
+    }
+  }
+
   document.querySelectorAll('[data-year]').forEach((element) => {
     element.textContent = String(new Date().getFullYear());
   });
