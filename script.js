@@ -165,6 +165,76 @@
     }
   }
 
+  const stagedSections = document.querySelectorAll('[data-staged-section]');
+  const stagedMotionQuery = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+  if (typeof window.IntersectionObserver === 'function'
+    && !(stagedMotionQuery && stagedMotionQuery.matches)) {
+    stagedSections.forEach((section) => {
+      const targets = section.querySelectorAll('[data-staged-reveal]');
+      const trigger = section.querySelector('[data-staged-trigger]') || targets[0];
+      if (!targets.length || !trigger) return;
+      let stagedObserver;
+      const showStagedSectionImmediately = () => {
+        if (stagedObserver) stagedObserver.disconnect();
+        section.classList.remove('staged-reveal-ready');
+        section.classList.add('staged-revealed');
+      };
+      const handleStagedMotionChange = (event) => {
+        if (!event.matches) return;
+        showStagedSectionImmediately();
+        if (typeof stagedMotionQuery.removeEventListener === 'function') {
+          stagedMotionQuery.removeEventListener('change', handleStagedMotionChange);
+        } else if (typeof stagedMotionQuery.removeListener === 'function') {
+          stagedMotionQuery.removeListener(handleStagedMotionChange);
+        }
+      };
+
+      try {
+        stagedObserver = new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.08)) {
+            section.classList.add('staged-revealed');
+            stagedObserver.disconnect();
+          }
+        }, { threshold: 0.08 });
+        stagedObserver.observe(trigger);
+        section.classList.add('staged-reveal-ready');
+
+        if (stagedMotionQuery) {
+          if (typeof stagedMotionQuery.addEventListener === 'function') {
+            stagedMotionQuery.addEventListener('change', handleStagedMotionChange);
+          } else if (typeof stagedMotionQuery.addListener === 'function') {
+            stagedMotionQuery.addListener(handleStagedMotionChange);
+          }
+          handleStagedMotionChange(stagedMotionQuery);
+        }
+      } catch {
+        showStagedSectionImmediately();
+      }
+    });
+  }
+
+  const founderPortrait = document.querySelector('#founder-portrait');
+  const founderPhoto = document.querySelector('#founder-photo');
+  if (founderPortrait && founderPhoto) {
+    const showFounderPhoto = () => {
+      founderPortrait.classList.add('has-founder-photo');
+      founderPhoto.removeAttribute('aria-hidden');
+    };
+    const showFounderFallback = () => {
+      founderPortrait.classList.remove('has-founder-photo');
+      founderPhoto.setAttribute('aria-hidden', 'true');
+    };
+    founderPhoto.addEventListener('load', showFounderPhoto);
+    founderPhoto.addEventListener('error', showFounderFallback);
+    if (founderPhoto.complete) {
+      if (founderPhoto.naturalWidth > 0) showFounderPhoto();
+      else showFounderFallback();
+    }
+  }
+
   const updateRequestOpen = document.querySelector('#update-request-open');
   const updateRequestDialog = document.querySelector('#update-request-dialog');
   const updateRequestClose = document.querySelector('#update-request-close');
