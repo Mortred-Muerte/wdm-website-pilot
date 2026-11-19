@@ -259,10 +259,65 @@
       }
     });
 
-    updateRequestForm.addEventListener('submit', (event) => {
+    let updateRequestSubmitting = false;
+
+    updateRequestForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (updateRequestSubmitting) return;
       if (!updateRequestForm.reportValidity()) return;
-      updateRequestStatus.textContent = 'Preview complete. Nothing has been sent.';
+
+      const submitButton = updateRequestForm.querySelector('.update-request-submit');
+      if (!submitButton) return;
+      const fields = new FormData(updateRequestForm);
+      const fieldValue = (name) => String(fields.get(name) || '').trim();
+      const payload = {
+        name: fieldValue('name'),
+        email: fieldValue('email'),
+        website: fieldValue('website'),
+        updateType: fieldValue('updateType'),
+        changes: fieldValue('changes'),
+        websiteConfirm: fieldValue('websiteConfirm'),
+      };
+      const originalButtonMarkup = submitButton.innerHTML;
+      const originalButtonDisabled = submitButton.disabled;
+      let controller;
+      let timeout;
+
+      updateRequestSubmitting = true;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending…';
+      updateRequestStatus.textContent = 'Sending…';
+
+      try {
+        controller = new AbortController();
+        timeout = window.setTimeout(() => controller.abort(), 15000);
+        const response = await fetch('/api/update-request.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error('Invalid server response');
+        }
+        if (!response.ok || !result || result.success !== true) {
+          throw new Error('Request was not confirmed');
+        }
+        updateRequestStatus.textContent = 'Your update request has been sent. We’ll review it and get back to you.';
+      } catch {
+        updateRequestStatus.textContent = controller && controller.signal.aborted
+          ? 'The request timed out. We couldn’t confirm it was sent. Please try again.'
+          : 'We couldn’t confirm your request was sent. Please try again.';
+      } finally {
+        window.clearTimeout(timeout);
+        updateRequestSubmitting = false;
+        submitButton.disabled = originalButtonDisabled;
+        submitButton.innerHTML = originalButtonMarkup;
+      }
     });
   }
 

@@ -174,7 +174,7 @@ try {
         if (!isset($data->$field) || !is_string($data->$field)) $errors[$field] = 'Enter a valid value.';
         else $values[$field] = trim($data->$field);
     }
-    if (isset($data->websiteConfirm) && !is_string($data->websiteConfirm)) $errors['websiteConfirm'] = 'Invalid value.';
+    if (property_exists($data, 'websiteConfirm') && !is_string($data->websiteConfirm)) $errors['websiteConfirm'] = 'Invalid value.';
     if (isset($data->websiteConfirm) && is_string($data->websiteConfirm) && trim($data->websiteConfirm) !== '') {
         wdm_reply(400, ['success' => false, 'message' => 'This request could not be sent. Please refresh the page and try again.']);
     }
