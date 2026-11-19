@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-// Enable after the destination mailbox is provisioned and ready for its receipt test.
-const WDM_UPDATE_DELIVERY_ENABLED = false;
+// The destination mailbox is active; acknowledge requests only after mail acceptance.
+const WDM_UPDATE_DELIVERY_ENABLED = true;
 
 // Same-origin contact endpoint. No visitor data is used as a recipient or sender.
 @ini_set('display_errors', '0');

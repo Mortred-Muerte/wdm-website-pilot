@@ -132,7 +132,6 @@ body.update-request-open{overflow:hidden}
 #update-request-dialog .update-request-preview-note{margin:18px 0 16px;padding:11px 14px;border-radius:10px;background:var(--wash);color:#4c6d64;font-size:12px;line-height:1.5}
 #update-request-dialog .update-request-submit{width:100%;min-height:48px;border-radius:999px}
 #update-request-dialog .update-request-submit:disabled{opacity:.7;cursor:wait;transform:none}
-#update-request-dialog .update-request-submit[data-mailbox-pending]{cursor:not-allowed}
 #update-request-dialog .update-request-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 #update-request-dialog .update-request-status:not(:empty){margin-top:14px;color:#3c6b5c;font-size:13px;text-align:center}
 @keyframes update-request-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
