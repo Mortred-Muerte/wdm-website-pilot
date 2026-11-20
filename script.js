@@ -462,7 +462,7 @@
       const validContact = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail);
       emailBrief.hidden = !validContact;
       if (validContact) {
-        emailBrief.href = `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent('New website project enquiry')}&body=${encodeURIComponent(brief)}`;
+        emailBrief.href = `mailto:${contactEmail}?subject=${encodeURIComponent('WDM Website Enquiry')}&body=${encodeURIComponent(brief)}`;
       } else {
         emailBrief.removeAttribute('href');
       }
