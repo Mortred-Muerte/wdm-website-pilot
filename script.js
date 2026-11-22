@@ -12,6 +12,8 @@
     invalidWebsite: 'Veuillez saisir une URL complète, par exemple https://votresite.com.',
     invalidLength: 'Veuillez raccourcir ce texte.',
     invalidField: 'Veuillez vérifier ce champ.',
+    invalidName: 'Indiquez votre nom en 100 caractères maximum.',
+    invalidChanges: 'Décrivez les modifications en 5 000 caractères maximum.',
     briefHeader: 'DEMANDE DE SITE WEB WDM',
     briefName: 'Nom',
     briefBusiness: 'Activité',
@@ -31,6 +33,12 @@
     updateTimeout: 'The request timed out. We couldn’t confirm it was sent. Please try again.',
     updateError: 'We couldn’t confirm your request was sent. Please try again.',
     required: 'Please complete this field.',
+    invalidEmail: 'Please enter a valid email address.',
+    invalidWebsite: 'Please enter a full http:// or https:// website link.',
+    invalidLength: 'Please shorten this text.',
+    invalidField: 'Please check this field.',
+    invalidName: 'Enter your name using up to 100 characters.',
+    invalidChanges: 'Describe the changes using up to 5,000 characters.',
     briefHeader: 'WDM WEBSITE ENQUIRY',
     briefName: 'Name',
     briefBusiness: 'Business',
@@ -443,11 +451,120 @@
     });
 
     let updateRequestSubmitting = false;
+    let updateInvalidControl = null;
+    let updateFieldError = null;
+    let updateValidationShown = false;
+    const updateControls = ['name', 'email', 'website', 'updateType', 'changes']
+      .map((name) => updateRequestForm.elements.namedItem(name)).filter(Boolean);
+    const updateWebsite = updateRequestForm.elements.namedItem('website');
+
+    const clearUpdateFieldError = () => {
+      if (updateInvalidControl) {
+        updateInvalidControl.removeAttribute('aria-invalid');
+        const descriptions = (updateInvalidControl.getAttribute('aria-describedby') || '')
+          .split(/\s+/).filter((id) => id && id !== 'update-request-field-error');
+        if (descriptions.length) updateInvalidControl.setAttribute('aria-describedby', descriptions.join(' '));
+        else updateInvalidControl.removeAttribute('aria-describedby');
+      }
+      if (updateFieldError) updateFieldError.remove();
+      updateInvalidControl = null;
+      updateFieldError = null;
+    };
+    const focusUpdateTarget = (target, block) => {
+      try { target.focus({ preventScroll: true }); } catch { target.focus(); }
+      if (typeof target.scrollIntoView === 'function') {
+        try { target.scrollIntoView({ block, behavior: 'auto' }); }
+        catch { target.scrollIntoView(false); }
+      }
+    };
+    const showUpdateResult = (message) => {
+      updateValidationShown = false;
+      updateRequestStatus.textContent = message;
+      updateRequestStatus.setAttribute('tabindex', '-1');
+      focusUpdateTarget(updateRequestStatus, 'nearest');
+    };
+    const updateFieldMessage = (control, serverMessage) => {
+      if (control.required && !control.value.trim()) return uiText.required;
+      if (!isFrench && typeof serverMessage === 'string') return serverMessage;
+      if (control.name === 'website') return uiText.invalidWebsite;
+      if (control.name === 'email') return uiText.invalidEmail;
+      if (control.name === 'name' && serverMessage) return uiText.invalidName;
+      if (control.name === 'changes' && serverMessage) return uiText.invalidChanges;
+      if (control.validity.tooLong) return uiText.invalidLength;
+      return uiText.invalidField;
+    };
+    const showUpdateFieldError = (control, message) => {
+      clearUpdateFieldError();
+      control.setCustomValidity(message);
+      control.setAttribute('aria-invalid', 'true');
+      updateInvalidControl = control;
+      updateFieldError = document.createElement('p');
+      updateFieldError.id = 'update-request-field-error';
+      updateFieldError.className = 'update-request-field-error';
+      updateFieldError.setAttribute('role', 'alert');
+      updateFieldError.textContent = message;
+      control.insertAdjacentElement('afterend', updateFieldError);
+      const descriptions = (control.getAttribute('aria-describedby') || '').trim();
+      control.setAttribute('aria-describedby', `${descriptions}${descriptions ? ' ' : ''}update-request-field-error`);
+      const label = updateRequestForm.querySelector(`label[for="${control.id}"]`);
+      updateRequestStatus.textContent = `${label ? label.textContent.trim() + uiText.labelSeparator : ''}${message}`;
+      updateValidationShown = true;
+      focusUpdateTarget(control, 'center');
+    };
+    const normalizeUpdateWebsite = () => {
+      if (!updateWebsite) return;
+      const value = updateWebsite.value.trim();
+      updateWebsite.value = value;
+      if (!value || /^[a-z][a-z0-9+.-]*:\/\//i.test(value) || /[\\\x00-\x20\x7f]/.test(value)) return;
+      try {
+        const url = new URL(value.startsWith('//') ? `https:${value}` : `https://${value}`);
+        const labels = url.hostname.split('.');
+        const validDomain = url.hostname.length <= 253 && labels.length > 1
+          && labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label))
+          && /[a-z]/i.test(labels[labels.length - 1]);
+        if (validDomain && !url.username && !url.password && (!url.port || Number(url.port) > 0)) {
+          updateWebsite.value = url.href;
+        }
+      } catch { /* Leave invalid input visible for the field-level validation message. */ }
+    };
+    const validateUpdateFields = () => {
+      clearUpdateFieldError();
+      updateControls.forEach((control) => {
+        control.setCustomValidity('');
+        control.value = control.value.trim();
+      });
+      normalizeUpdateWebsite();
+      if (updateWebsite && updateWebsite.value) {
+        try {
+          const url = new URL(updateWebsite.value);
+          if (!['http:', 'https:'].includes(url.protocol) || !url.hostname || url.username || url.password
+            || /[\\\x00-\x20\x7f]/.test(updateWebsite.value)) throw new Error('Invalid website link');
+        } catch { updateWebsite.setCustomValidity(uiText.invalidWebsite); }
+      }
+      const invalid = updateControls.find((control) => !control.validity.valid);
+      if (invalid) {
+        showUpdateFieldError(invalid, updateFieldMessage(invalid));
+        return false;
+      }
+      return true;
+    };
+    const clearEditedUpdateError = (event) => {
+      const control = event.target;
+      if (!updateControls.includes(control)) return;
+      control.setCustomValidity('');
+      if (control === updateInvalidControl) clearUpdateFieldError();
+      if (updateValidationShown) {
+        updateRequestStatus.textContent = '';
+        updateValidationShown = false;
+      }
+    };
+    updateRequestForm.addEventListener('input', clearEditedUpdateError);
+    updateRequestForm.addEventListener('change', clearEditedUpdateError);
 
     updateRequestForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (updateRequestSubmitting) return;
-      if (!updateRequestForm.reportValidity()) return;
+      if (!validateUpdateFields()) return;
 
       const submitButton = updateRequestForm.querySelector('.update-request-submit');
       if (!submitButton) return;
@@ -466,6 +583,10 @@
       let controller;
       let timeout;
 
+      const activeControl = document.activeElement;
+      if (activeControl && updateRequestForm.contains(activeControl)
+        && /^(INPUT|SELECT|TEXTAREA)$/.test(activeControl.tagName)) activeControl.blur();
+      updateValidationShown = false;
       updateRequestSubmitting = true;
       submitButton.disabled = true;
       submitButton.textContent = uiText.sending;
@@ -488,13 +609,20 @@
           throw new Error('Invalid server response');
         }
         if (!response.ok || !result || result.success !== true) {
+          if (response.status === 422 && result && result.errors && typeof result.errors === 'object') {
+            const invalid = updateControls.find((control) => Object.prototype.hasOwnProperty.call(result.errors, control.name));
+            if (invalid) {
+              showUpdateFieldError(invalid, updateFieldMessage(invalid, result.errors[invalid.name]));
+              return;
+            }
+          }
           throw new Error('Request was not confirmed');
         }
-        updateRequestStatus.textContent = uiText.updateSent;
+        showUpdateResult(uiText.updateSent);
       } catch {
-        updateRequestStatus.textContent = controller && controller.signal.aborted
+        showUpdateResult(controller && controller.signal.aborted
           ? uiText.updateTimeout
-          : uiText.updateError;
+          : uiText.updateError);
       } finally {
         window.clearTimeout(timeout);
         updateRequestSubmitting = false;
@@ -502,6 +630,9 @@
         submitButton.innerHTML = originalButtonMarkup;
       }
     });
+    // Let this bound handler explain invalid fields instead of a silent native block.
+    // The HTML keeps native validation when JavaScript is unavailable.
+    updateRequestForm.noValidate = true;
   }
 
   document.querySelectorAll('[data-year]').forEach((element) => {
@@ -634,3 +765,4 @@
     });
   }
 })();
+

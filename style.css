@@ -133,6 +133,7 @@ body.update-request-open{overflow:hidden}
 #update-request-dialog .update-request-submit{width:100%;min-height:48px;border-radius:999px}
 #update-request-dialog .update-request-submit:disabled{opacity:.7;cursor:wait;transform:none}
 #update-request-dialog .update-request-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+#update-request-dialog .update-request-field-error{margin-top:6px;color:#a33d30;font-size:14px;line-height:1.45}
 #update-request-dialog .update-request-status:not(:empty){margin-top:14px;color:#3c6b5c;font-size:13px;text-align:center}
 @keyframes update-request-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(max-width:620px){#update-request-dialog{width:calc(100% - 24px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);border-radius:22px}#update-request-dialog .update-request-shell{padding:24px 22px}#update-request-dialog h2{font-size:28px}#update-request-dialog #update-request-description{font-size:14px}#update-request-dialog .update-request-fields{grid-template-columns:1fr;gap:16px}#update-request-dialog .update-request-full{grid-column:auto}}
@@ -283,5 +284,5 @@ select{padding-right:30px}
 
 @media(max-width:879px){.site-header.nav-ready .primary-nav{max-height:calc(100vh - var(--header-height) - 34px);max-height:calc(100dvh - var(--header-height) - 34px);overflow-y:auto;overscroll-behavior:contain}}
 
-/* Equal French service cards and bottom-aligned links while the grid is three across. */
-@media(min-width:621px){html[lang="fr"] #services .service-card{align-self:stretch;display:flex;flex-direction:column}html[lang="fr"] #services .service-details{display:flex;flex-direction:column;flex:1}html[lang="fr"] #services .service-details::details-content{display:flex;flex-direction:column;flex:1}html[lang="fr"] #services .service-details>a{margin-top:auto;align-self:flex-start}}
+/* Keep French links aligned; the shared collapsed-grid rule controls equal card heights. */
+@media(min-width:621px){html[lang="fr"] #services .service-card{display:flex;flex-direction:column}html[lang="fr"] #services .service-details{display:flex;flex-direction:column;flex:1}html[lang="fr"] #services .service-details::details-content{display:flex;flex-direction:column;flex:1}html[lang="fr"] #services .service-details>a{margin-top:auto;align-self:flex-start}}
