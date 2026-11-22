@@ -274,3 +274,5 @@ select{padding-right:30px}
 .primary-nav .language-switch-mobile{display:none}
 @media(min-width:880px) and (max-width:1100px){html[lang="fr"] .primary-nav{gap:10px}html[lang="fr"] .site-header{gap:14px}}
 @media(max-width:879px){.language-switch-desktop{display:none}.primary-nav .language-switch-mobile{display:flex;justify-content:flex-start;gap:10px;margin-bottom:10px;padding:0 12px 12px;border-bottom:1px solid #dfefea}.primary-nav .language-switch-mobile a{font-size:13px;min-width:32px;min-height:44px;padding:7px 2px;border-radius:0}.primary-nav .language-switch-mobile a:hover{background:none}.site-header:not(.nav-ready) .primary-nav .language-switch-mobile{flex-basis:100%}}
+
+@media(max-width:879px){.site-header.nav-ready .primary-nav{max-height:calc(100vh - var(--header-height) - 34px);max-height:calc(100dvh - var(--header-height) - 34px);overflow-y:auto;overscroll-behavior:contain}}
