@@ -7,8 +7,11 @@
   <meta name="description" content="WDM — Web Design & Management. Professional websites, business websites, online stores and ongoing website support for small businesses.">
   <title>WDM — Web Design &amp; Management</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23cefbfb'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial' font-size='34' font-weight='700'%3EW%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261120-english-polish">
-  <script src="script.js?v=20261120-english-polish" defer></script>
+  <link rel="alternate" hreflang="en" href="/">
+  <link rel="alternate" hreflang="fr" href="/fr/">
+  <link rel="alternate" hreflang="x-default" href="/">
+  <link rel="stylesheet" href="/style.css?v=20261122-bilingual">
+  <script src="/script.js?v=20261122-bilingual" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -18,6 +21,7 @@
     </a>
     <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
+      <div class="language-switch language-switch-mobile" role="group" aria-label="Language"><a href="/" data-language-link lang="en" hreflang="en" aria-label="English" aria-current="page">EN</a><span aria-hidden="true">/</span><a href="/fr/" data-language-link lang="fr" hreflang="fr" aria-label="Français">FR</a></div>
       <a href="#services">Services</a>
       <a href="#management">Management</a>
       <a href="#why-wdm">Why WDM?</a>
@@ -25,6 +29,7 @@
       <a href="#work">Sample work</a>
       <a href="#about">About</a>
     </nav>
+    <nav class="language-switch language-switch-desktop" aria-label="Language"><a href="/" data-language-link lang="en" hreflang="en" aria-label="English" aria-current="page">EN</a><span aria-hidden="true">/</span><a href="/fr/" data-language-link lang="fr" hreflang="fr" aria-label="Français">FR</a></nav>
     <a class="button button-dark header-cta" href="#contact">Request a Proposal <span aria-hidden="true">↗</span></a>
   </header>
 
@@ -175,7 +180,7 @@
       <div class="container about-grid">
         <div class="about-heading" data-staged-trigger><p class="eyebrow" data-staged-reveal style="--stage-delay:0ms">ABOUT WDM</p><h2 id="about-title" data-staged-reveal style="--stage-delay:160ms">Behind WDM</h2></div>
         <figure class="founder-portrait" id="founder-portrait" data-staged-reveal style="--stage-delay:320ms">
-          <img id="founder-photo" src="assets/imane-wdm.jpg" alt="Imane, founder of WDM" width="600" height="720" loading="lazy" decoding="async" aria-hidden="true">
+          <img id="founder-photo" src="/assets/imane-wdm.jpg" alt="Imane, founder of WDM" width="600" height="720" loading="lazy" decoding="async" aria-hidden="true">
           <div class="founder-placeholder" role="img" aria-label="Founder photo placeholder for Imane"><span class="founder-initial" aria-hidden="true">I</span><span class="founder-name" aria-hidden="true">Imane</span><span class="founder-role" aria-hidden="true">Founder, WDM</span></div>
         </figure>
         <div class="about-copy">
@@ -186,7 +191,7 @@
       </div>
     </section>
 
-    <section class="contact-intro" aria-label="Let's build your online presence"><div class="container"><p class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</p><h2>A stronger online presence.<br>A simpler way to get there.</h2><a class="button button-dark" href="#contact">Let's talk about your website <span aria-hidden="true">↗</span></a></div></section>
+    <section class="contact-intro" aria-label="Let's build your online presence"><div class="container"><p class="eyebrow">YOUR PROJECT STARTS HERE</p><h2>A website built for your business.<br>A presence built to last.</h2><a class="button button-dark" href="#contact">Let’s talk about your website <span aria-hidden="true">↗</span></a></div></section>
 
     <section class="section contact-section" id="contact" aria-labelledby="contact-title">
       <div class="container contact-grid">

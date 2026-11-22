@@ -1,6 +1,85 @@
 (() => {
   'use strict';
 
+  const isFrench = /^fr(?:-|$)/i.test(document.documentElement.lang || '');
+  const uiText = isFrench ? {
+    sending: 'Envoi en cours…',
+    updateSent: 'Votre demande de mise à jour a été envoyée. Nous allons l’examiner et vous recontacter.',
+    updateTimeout: 'Le délai d’envoi est dépassé. Nous n’avons pas pu confirmer l’envoi. Veuillez réessayer.',
+    updateError: 'Nous n’avons pas pu confirmer l’envoi de votre demande. Veuillez réessayer.',
+    required: 'Veuillez remplir ce champ.',
+    invalidEmail: 'Veuillez saisir une adresse e-mail valide.',
+    invalidWebsite: 'Veuillez saisir une URL complète, par exemple https://votresite.com.',
+    invalidLength: 'Veuillez raccourcir ce texte.',
+    invalidField: 'Veuillez vérifier ce champ.',
+    briefHeader: 'DEMANDE DE SITE WEB WDM',
+    briefName: 'Nom',
+    briefBusiness: 'Activité',
+    briefEmail: 'E-mail',
+    briefService: 'Type de site',
+    labelSeparator: ' : ',
+    briefProject: 'À propos du projet',
+    briefReady: 'Choisissez l’e-mail ou WhatsApp pour envoyer votre demande. Rien n’a encore été envoyé.',
+    briefSubject: 'Demande de site web WDM',
+    briefCopied: 'Demande copiée. Vous pouvez la coller dans votre message.',
+    briefSelect: 'Votre demande est sélectionnée. Utilisez la commande Copier de votre appareil pour la copier.',
+    briefFilename: 'wdm-demande-site-web.txt',
+    briefDownloaded: 'Demande téléchargée. Rien n’a été envoyé.',
+  } : {
+    sending: 'Sending…',
+    updateSent: 'Your update request has been sent. We’ll review it and get back to you.',
+    updateTimeout: 'The request timed out. We couldn’t confirm it was sent. Please try again.',
+    updateError: 'We couldn’t confirm your request was sent. Please try again.',
+    required: 'Please complete this field.',
+    briefHeader: 'WDM WEBSITE ENQUIRY',
+    briefName: 'Name',
+    briefBusiness: 'Business',
+    briefEmail: 'Email',
+    briefService: 'Service',
+    labelSeparator: ': ',
+    briefProject: 'About the project',
+    briefReady: 'Choose email or WhatsApp to send your enquiry. Nothing has been sent yet.',
+    briefSubject: 'WDM Website Enquiry',
+    briefCopied: 'Enquiry copied. You can paste it into your message.',
+    briefSelect: 'Your enquiry is selected. Use your device’s Copy command to copy it.',
+    briefFilename: 'wdm-website-enquiry.txt',
+    briefDownloaded: 'Enquiry downloaded. Nothing has been sent.',
+  };
+
+  const localizeFrenchValidation = (form) => {
+    if (!isFrench || !form) return;
+    form.addEventListener('invalid', (event) => {
+      const control = event.target;
+      if (!control || typeof control.setCustomValidity !== 'function' || !control.validity) return;
+      if (control.validity.valueMissing) control.setCustomValidity(uiText.required);
+      else if (control.validity.typeMismatch && control.type === 'email') control.setCustomValidity(uiText.invalidEmail);
+      else if (control.validity.typeMismatch && control.type === 'url') control.setCustomValidity(uiText.invalidWebsite);
+      else if (control.validity.tooLong) control.setCustomValidity(uiText.invalidLength);
+      else if (!control.validity.customError) control.setCustomValidity(uiText.invalidField);
+    }, true);
+    const clearValidation = (event) => {
+      if (event.target && typeof event.target.setCustomValidity === 'function') event.target.setCustomValidity('');
+    };
+    form.addEventListener('input', clearValidation, true);
+    form.addEventListener('change', clearValidation, true);
+  };
+
+  const languageSectionIds = new Set(Array.from(document.querySelectorAll('main > section[id]'), (section) => section.id));
+  document.querySelectorAll('.language-switch a[data-language-link]').forEach((link) => {
+    const rootHref = link.getAttribute('href');
+    if (rootHref !== '/' && rootHref !== '/fr/') return;
+    link.addEventListener('click', () => {
+      let sectionHash = '';
+      try {
+        const sectionId = decodeURIComponent(window.location.hash.slice(1));
+        if (languageSectionIds.has(sectionId)) sectionHash = `#${encodeURIComponent(sectionId)}`;
+      } catch {
+        // Unknown or malformed fragments fall back to the language page's top.
+      }
+      link.setAttribute('href', `${rootHref}${sectionHash}`);
+    });
+  });
+
   const header = document.querySelector('#site-header');
   const menuToggle = document.querySelector('#menu-toggle');
   const navigation = document.querySelector('#primary-nav');
@@ -240,6 +319,7 @@
   const updateRequestClose = document.querySelector('#update-request-close');
   const updateRequestForm = document.querySelector('#update-request-form');
   const updateRequestStatus = document.querySelector('#update-request-status');
+  localizeFrenchValidation(updateRequestForm);
 
   if (updateRequestOpen && updateRequestDialog && updateRequestClose
     && updateRequestForm && updateRequestStatus) {
@@ -355,8 +435,8 @@
 
       updateRequestSubmitting = true;
       submitButton.disabled = true;
-      submitButton.textContent = 'Sending…';
-      updateRequestStatus.textContent = 'Sending…';
+      submitButton.textContent = uiText.sending;
+      updateRequestStatus.textContent = uiText.sending;
 
       try {
         controller = new AbortController();
@@ -377,11 +457,11 @@
         if (!response.ok || !result || result.success !== true) {
           throw new Error('Request was not confirmed');
         }
-        updateRequestStatus.textContent = 'Your update request has been sent. We’ll review it and get back to you.';
+        updateRequestStatus.textContent = uiText.updateSent;
       } catch {
         updateRequestStatus.textContent = controller && controller.signal.aborted
-          ? 'The request timed out. We couldn’t confirm it was sent. Please try again.'
-          : 'We couldn’t confirm your request was sent. Please try again.';
+          ? uiText.updateTimeout
+          : uiText.updateError;
       } finally {
         window.clearTimeout(timeout);
         updateRequestSubmitting = false;
@@ -396,6 +476,7 @@
   });
 
   const projectForm = document.querySelector('#project-form');
+  localizeFrenchValidation(projectForm);
   const briefResult = document.querySelector('#brief-result');
   const briefOutput = document.querySelector('#brief-output');
   const briefStatus = document.querySelector('#brief-status');
@@ -437,32 +518,32 @@
     ['firstName', 'lastName', 'email', 'service'].forEach((name) => {
       const control = field(name);
       if (control && typeof control.setCustomValidity === 'function') {
-        control.setCustomValidity(value(name) ? '' : 'Please complete this field.');
+        control.setCustomValidity(value(name) ? '' : uiText.required);
       }
     });
 
     if (!projectForm.reportValidity()) return;
 
     const brief = [
-      'WDM WEBSITE ENQUIRY',
+      uiText.briefHeader,
       '',
-      `Name: ${value('firstName')} ${value('lastName')}`,
-      ...(value('business') ? [`Business: ${value('business')}`] : []),
-      `Email: ${value('email')}`,
-      `Service: ${selectedLabel('service')}`,
-      ...(value('details') ? ['', 'About the project', value('details')] : []),
+      `${uiText.briefName}${uiText.labelSeparator}${value('firstName')} ${value('lastName')}`,
+      ...(value('business') ? [`${uiText.briefBusiness}${uiText.labelSeparator}${value('business')}`] : []),
+      `${uiText.briefEmail}${uiText.labelSeparator}${value('email')}`,
+      `${uiText.briefService}${uiText.labelSeparator}${selectedLabel('service')}`,
+      ...(value('details') ? ['', uiText.briefProject, value('details')] : []),
     ].join('\n');
 
     briefOutput.value = brief;
     briefResult.hidden = false;
-    announce('Choose email or WhatsApp to send your enquiry. Nothing has been sent yet.');
+    announce(uiText.briefReady);
 
     if (emailBrief) {
       const contactEmail = (projectForm.dataset.contactEmail || '').trim();
       const validContact = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail);
       emailBrief.hidden = !validContact;
       if (validContact) {
-        emailBrief.href = `mailto:${contactEmail}?subject=${encodeURIComponent('WDM Website Enquiry')}&body=${encodeURIComponent(brief)}`;
+        emailBrief.href = `mailto:${contactEmail}?subject=${encodeURIComponent(uiText.briefSubject)}&body=${encodeURIComponent(brief)}`;
       } else {
         emailBrief.removeAttribute('href');
       }
@@ -494,11 +575,11 @@
           throw new Error('Clipboard is unavailable');
         }
         await navigator.clipboard.writeText(briefOutput.value);
-        announce('Enquiry copied. You can paste it into your message.');
+        announce(uiText.briefCopied);
       } catch {
         briefOutput.focus();
         briefOutput.select();
-        announce('Your enquiry is selected. Use your device’s Copy command to copy it.');
+        announce(uiText.briefSelect);
       }
     });
   }
@@ -511,12 +592,12 @@
       }));
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = 'wdm-website-enquiry.txt';
+      link.download = uiText.briefFilename;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-      announce('Enquiry downloaded. Nothing has been sent.');
+      announce(uiText.briefDownloaded);
     });
   }
 })();

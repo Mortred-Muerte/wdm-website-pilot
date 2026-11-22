@@ -146,12 +146,46 @@ function wdm_rate_limit(): int
     return 0;
 }
 
+// Compare the browser origin with this deployment, without binding it to one domain.
+function wdm_same_origin(array $server): bool
+{
+    if (!isset($server['HTTP_ORIGIN'])) return true;
+    $authority = $server['HTTP_HOST'] ?? '';
+    $origin = $server['HTTP_ORIGIN'];
+    if (!is_string($authority) || !is_string($origin) || $authority === '' || $origin === ''
+        || preg_match('/[\\\\\x00-\x20\x7F]/', $authority . $origin)) return false;
+    $request = @parse_url('https://' . $authority);
+    $source = @parse_url($origin);
+    if (!is_array($request) || !is_array($source) || empty($request['host']) || empty($source['host'])
+        || array_diff(array_keys($request), ['scheme', 'host', 'port'])
+        || array_diff(array_keys($source), ['scheme', 'host', 'port'])) return false;
+    $host = strtolower($request['host']);
+    if ($host !== strtolower($source['host'])) return false;
+    $ipv6 = $host[0] === '[';
+    if ($ipv6) {
+        if (!filter_var(substr($host, 1, -1), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) return false;
+    } elseif (strlen($host) > 253 || !preg_match('/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/D', $host)) return false;
+    // Public sites require HTTPS, including deployments behind a TLS-terminating proxy.
+    // Explicit local HTTP is permitted for previews; forwarded headers are not trusted.
+    $loopback = $host === 'localhost' || $host === '127.0.0.1' || $host === '[::1]';
+    $https = strtolower((string) ($server['HTTPS'] ?? ''));
+    $requestScheme = strtolower((string) ($server['REQUEST_SCHEME'] ?? ''));
+    $localHttp = $loopback && !in_array($https, ['on', '1'], true) && $requestScheme !== 'https'
+        && ($requestScheme === 'http' || in_array($https, ['off', '0'], true) || (string) ($server['SERVER_PORT'] ?? '') === '80');
+    $scheme = $localHttp ? 'http' : 'https';
+    if (strtolower($source['scheme'] ?? '') !== $scheme) return false;
+    $defaultPort = $scheme === 'https' ? 443 : 80;
+    $requestPort = $request['port'] ?? $defaultPort;
+    $originPort = $source['port'] ?? $defaultPort;
+    return $requestPort > 0 && $requestPort <= 65535 && $requestPort === $originPort;
+}
+
 try {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
         header('Allow: POST');
         wdm_reply(405, ['success' => false, 'message' => 'Use POST to submit an update request.']);
     }
-    if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] !== 'https://jeweled-darkturquoise-horse-69.hostingersite.com') {
+    if (!wdm_same_origin($_SERVER)) {
         wdm_reply(403, ['success' => false, 'message' => 'This request is not allowed.']);
     }
     $contentType = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
