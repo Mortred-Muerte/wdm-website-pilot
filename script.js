@@ -80,6 +80,39 @@
     });
   });
 
+  const languageDropdowns = Array.from(document.querySelectorAll('.language-switch details.language-dropdown'));
+  if (languageDropdowns.length) {
+    languageDropdowns.forEach((dropdown) => {
+      dropdown.addEventListener('toggle', () => {
+        if (!dropdown.open) return;
+        languageDropdowns.forEach((other) => {
+          if (other !== dropdown) other.open = false;
+        });
+      });
+      dropdown.querySelectorAll('a[data-language-link]').forEach((link) => {
+        link.addEventListener('click', () => { dropdown.open = false; });
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      languageDropdowns.forEach((dropdown) => {
+        if (dropdown.open && !dropdown.contains(event.target)) dropdown.open = false;
+      });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openDropdown = languageDropdowns.find((dropdown) => dropdown.open
+        && dropdown.contains(document.activeElement))
+        || languageDropdowns.find((dropdown) => dropdown.open);
+      if (!openDropdown) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      languageDropdowns.forEach((dropdown) => { dropdown.open = false; });
+      const summary = openDropdown.querySelector('summary');
+      if (summary) summary.focus();
+    });
+  }
+
   const header = document.querySelector('#site-header');
   const menuToggle = document.querySelector('#menu-toggle');
   const navigation = document.querySelector('#primary-nav');

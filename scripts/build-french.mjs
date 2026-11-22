@@ -80,9 +80,14 @@ function translateTag(raw) {
   return translated;
 }
 
+// Translate only the marked current-language code; option names stay intact.
+function localizeLanguageDisplay(html) {
+  return html.replace(/(<span\b(?=[^>]*\bdata-current-language(?:\s|=|>))[^>]*>)[\s\S]*?(<\/span>)/g, '$1FR$2');
+}
+
 // The French service selector intentionally contains the three supplied options.
 // Keep field names and values, and leave the independent update-type selector intact.
-const template = source.replace(/<select\b(?=[^>]*\bid=["']website-type["'])[^>]*>[\s\S]*?<\/select>/i,
+const template = localizeLanguageDisplay(source).replace(/<select\b(?=[^>]*\bid=["']website-type["'])[^>]*>[\s\S]*?<\/select>/i,
   (select) => select.replace(/<option\b[^>]*\bvalue=["'](?:management|guidance)["'][^>]*>[\s\S]*?<\/option>/gi, ''));
 // Quote-aware HTML tokens preserve all tags, attributes, whitespace and layout hooks.
 const tokens = template.match(/<(?:[^>"']|"[^"]*"|'[^']*')*>|[^<]+/g) || [];
